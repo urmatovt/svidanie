@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Свидание?</title>
+<style>
+  :root{
+    --pink-bg: #fdeef2;
+    --pink-card: #ffffff;
+    --pink-accent: #ff6f9c;
+    --pink-accent-dark: #e0507d;
+    --pink-soft: #ffe1eb;
+    --text-dark: #4a3540;
+    --text-muted: #9c8892;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;height:100%;
+    font-family:'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(160deg, #ffe6ee 0%, #ffd3e2 45%, #ffc2d8 100%);
+    color:var(--text-dark);
+    overflow-x:hidden;
+  }
+  body{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+
+  .app{
+    position:relative;
+    width:100%;
+    max-width:380px;
+    min-height:600px;
+    background:var(--pink-card);
+    border-radius:28px;
+    box-shadow:0 20px 60px rgba(224,80,125,0.25);
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .screen{
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    padding:32px 24px 28px;
+    flex:1;
+    animation:fadeIn .4s ease;
+    position:relative;
+  }
+  .screen.active{display:flex;}
+
+  @keyframes fadeIn{
+    from{opacity:0; transform:translateY(10px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+
+  .art{
+    width:180px;
+    height:180px;
+    margin-bottom:18px;
+    flex-shrink:0;
+    animation:floaty 3.2s ease-in-out infinite;
+  }
+  @keyframes floaty{
+    0%,100%{ transform:translateY(0); }
+    50%{ transform:translateY(-7px); }
+  }
+  .blink{
+    transform-box:fill-box;
+    transform-origin:center;
+    animation:blink 4.6s ease-in-out infinite;
+  }
+  @keyframes blink{
+    0%,88%,100%{ transform:scaleY(1); }
+    92%{ transform:scaleY(0.1); }
+  }
+  .heart-pulse{
+    transform-box:fill-box;
+    transform-origin:center;
+    animation:heartPulse 1.5s ease-in-out infinite;
+  }
+  @keyframes heartPulse{
+    0%,100%{ transform:scale(1); }
+    50%{ transform:scale(1.1); }
+  }
+
+  #kittenFace .mouth,
+  #kittenFace .eye-set,
+  #kittenFace .brows,
+  #kittenFace .tears,
+  #kittenFace .tear-single{
+    opacity:0;
+    transition:opacity .25s ease;
+  }
+  #kittenFace[data-stage="0"] .mouth-0{ opacity:1; }
+  #kittenFace[data-stage="1"] .mouth-1{ opacity:1; }
+  #kittenFace[data-stage="2"] .mouth-2{ opacity:1; }
+  #kittenFace[data-stage="3"] .mouth-3{ opacity:1; }
+  #kittenFace[data-stage="4"] .mouth-4{ opacity:1; }
+
+  #kittenFace[data-stage="0"] .eyes-happy{ opacity:1; }
+  #kittenFace[data-stage="1"] .eyes-content{ opacity:1; }
+  #kittenFace[data-stage="2"] .eyes-pleading{ opacity:1; }
+  #kittenFace[data-stage="3"] .eyes-squeezed{ opacity:1; }
+  #kittenFace[data-stage="4"] .eyes-shut{ opacity:1; }
+
+  #kittenFace .eyes-pleading{
+    transform-box:fill-box;
+    transform-origin:center;
+    transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+  }
+
+  #kittenFace[data-stage="2"] .brows{ opacity:1; }
+  #kittenFace[data-stage="4"] .brows{ opacity:1; }
+
+  #kittenFace[data-stage="1"] .tear-single{ opacity:1; }
+  #kittenFace[data-stage="4"] .tears{ opacity:1; }
+
+  .kitten-wrap{
+    position:relative;
+    z-index:2;
+    pointer-events:none;
+    transform-origin:center 75%;
+    transition:transform .4s cubic-bezier(.34,1.56,.64,1), filter .4s ease;
+    filter:drop-shadow(0 4px 10px rgba(224,80,125,0.15));
+  }
+  .kitten-wrap[data-stage="0"]{ transform:scale(1); }
+  .kitten-wrap[data-stage="1"]{ transform:scale(1.08); filter:drop-shadow(0 6px 14px rgba(224,80,125,0.22)); }
+  .kitten-wrap[data-stage="2"]{ transform:scale(1.17); filter:drop-shadow(0 8px 18px rgba(224,80,125,0.28)); }
+  .kitten-wrap[data-stage="3"]{ transform:scale(1.27); filter:drop-shadow(0 10px 22px rgba(224,80,125,0.34)); }
+  .kitten-wrap[data-stage="4"]{ transform:scale(1.36); filter:drop-shadow(0 12px 26px rgba(224,80,125,0.4)); animation:pleadShake .35s ease-in-out infinite; }
+
+  @keyframes pleadShake{
+    0%,100%{ transform:scale(1.36) rotate(0deg); }
+    25%{ transform:scale(1.36) rotate(-1.5deg); }
+    75%{ transform:scale(1.36) rotate(1.5deg); }
+  }
+  .tears .drop{
+    transform-box:fill-box;
+    transform-origin:top center;
+    animation:dropFall 1.3s ease-in infinite;
+  }
+  .tears .drop2{ animation-delay:.55s; }
+  @keyframes dropFall{
+    0%{ transform:translateY(0); opacity:0; }
+    15%{ opacity:1; }
+    100%{ transform:translateY(20px); opacity:0; }
+  }
+
+  h1{
+    font-size:21px;
+    font-weight:700;
+    text-align:center;
+    margin:0 0 6px;
+    line-height:1.35;
+  }
+  p.sub{
+    font-size:14px;
+    color:var(--text-muted);
+    text-align:center;
+    margin:0 0 22px;
+    line-height:1.5;
+  }
+
+  .btn-row{
+    display:flex;
+    gap:14px;
+    width:100%;
+    justify-content:center;
+    margin-top:auto;
+    min-height:56px;
+  }
+
+  button{
+    font-family:inherit;
+    cursor:pointer;
+    border:none;
+    outline:none;
+    -webkit-tap-highlight-color:transparent;
+  }
+
+  .btn-yes{
+    background:var(--pink-accent);
+    color:#fff;
+    font-size:16px;
+    font-weight:700;
+    padding:15px 30px;
+    border-radius:16px;
+    transition:transform .15s ease, background .2s ease;
+    box-shadow:0 8px 20px rgba(255,111,156,0.4);
+  }
+  .btn-yes:hover{background:var(--pink-accent-dark); transform:translateY(-2px);}
+  .btn-yes:active{transform:scale(0.96);}
+
+  .btn-no{
+    background:#fff;
+    color:var(--text-muted);
+    font-size:16px;
+    font-weight:600;
+    padding:15px 30px;
+    border-radius:16px;
+    border:1.5px solid #f0d8e0;
+    transition:transform .12s ease;
+    position:relative;
+  }
+
+  #stage1 .btn-row{height:56px;}
+
+  .btn-wide{
+    width:100%;
+    background:var(--pink-accent);
+    color:#fff;
+    font-size:16px;
+    font-weight:700;
+    padding:16px;
+    border-radius:16px;
+    margin-top:auto;
+    transition:transform .15s ease, background .2s ease;
+    box-shadow:0 8px 20px rgba(255,111,156,0.4);
+  }
+  .btn-wide:hover{background:var(--pink-accent-dark);}
+  .btn-wide:active{transform:scale(0.98);}
+  .btn-wide:disabled{
+    background:#f0d0dc;
+    box-shadow:none;
+    cursor:not-allowed;
+  }
+
+  .field{
+    width:100%;
+    margin-bottom:16px;
+  }
+  .field label{
+    display:block;
+    font-size:13px;
+    color:var(--text-muted);
+    margin-bottom:6px;
+    font-weight:600;
+  }
+  .field input[type="date"],
+  .field input[type="time"]{
+    width:100%;
+    padding:13px 14px;
+    border-radius:12px;
+    border:1.5px solid var(--pink-soft);
+    background:var(--pink-bg);
+    font-size:15px;
+    color:var(--text-dark);
+    font-family:inherit;
+  }
+  .field input:focus{
+    border-color:var(--pink-accent);
+    outline:none;
+  }
+
+  .food-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    width:100%;
+    margin-bottom:20px;
+  }
+  .food-item{
+    background:var(--pink-bg);
+    border:2px solid transparent;
+    border-radius:16px;
+    padding:16px 8px;
+    text-align:center;
+    transition:all .15s ease;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+  }
+  .food-item .emoji{font-size:32px;}
+  .food-item .label{font-size:13px; font-weight:600;}
+  .food-item.selected{
+    border-color:var(--pink-accent);
+    background:var(--pink-soft);
+  }
+  .food-item.place-custom{
+    cursor:text;
+  }
+  .food-item.place-custom input{
+    width:100%;
+    border:none;
+    background:transparent;
+    text-align:center;
+    font-family:inherit;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--text-dark);
+    outline:none;
+    padding:0;
+  }
+  .food-item.place-custom input::placeholder{
+    color:var(--text-muted);
+    font-weight:500;
+  }
+  .food-item.place-custom:focus-within{
+    border-color:var(--pink-accent);
+    background:var(--pink-soft);
+  }
+
+  .summary-card{
+    width:100%;
+    background:var(--pink-bg);
+    border-radius:16px;
+    padding:16px;
+    margin-bottom:20px;
+  }
+  .summary-row{
+    display:flex;
+    justify-content:space-between;
+    font-size:14px;
+    padding:6px 0;
+  }
+  .summary-row + .summary-row{border-top:1px solid #f5d8e2;}
+  .summary-row .k{color:var(--text-muted);}
+  .summary-row .v{font-weight:700; text-align:right;}
+
+  .progress{
+    display:flex;
+    gap:6px;
+    padding:18px 24px 0;
+  }
+  .progress span{
+    flex:1;
+    height:4px;
+    border-radius:2px;
+    background:#f5d8e2;
+    transition:background .3s ease;
+  }
+  .progress span.done{background:var(--pink-accent);}
+
+  .heart-fall{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    overflow:hidden;
+  }
+  .heart-fall span{
+    position:absolute;
+    top:-20px;
+    font-size:18px;
+    animation:fall linear forwards;
+    opacity:0.9;
+  }
+  @keyframes fall{
+    to{ transform:translateY(650px) rotate(360deg); opacity:0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <div class="progress" id="progress">
+    <span></span><span></span><span></span><span></span><span></span><span></span>
+  </div>
+
+  <!-- STAGE 1: invite -->
+  <div class="screen active" id="stage1">
+    <div class="kitten-wrap" id="kittenWrap" data-stage="0">
+    <svg class="art" id="kittenFace" data-stage="0" viewBox="0 0 200 200" fill="none">
+      <ellipse cx="100" cy="175" rx="55" ry="10" fill="#ffd7e4"/>
+      <path d="M58 68 L40 15 L92 52 Z" fill="#fff3f6" stroke="#f2a8bf" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M142 68 L160 15 L108 52 Z" fill="#fff3f6" stroke="#f2a8bf" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M61 58 L50 27 L80 50 Z" fill="#ffc3d6"/>
+      <path d="M139 58 L150 27 L120 50 Z" fill="#ffc3d6"/>
+      <circle cx="100" cy="115" r="50" fill="#fff3f6" stroke="#f2a8bf" stroke-width="2"/>
+
+      <g class="brows brows-worried">
+        <path d="M68 96q8-9 17-4" stroke="#4a3540" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M115 92q9-5 17 4" stroke="#4a3540" stroke-width="2" fill="none" stroke-linecap="round"/>
+      </g>
+
+      <g class="eye-set eyes-happy">
+        <path d="M76 105q4-6 8 0" stroke="#4a3540" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M116 105q4-6 8 0" stroke="#4a3540" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      </g>
+      <g class="eye-set eyes-content">
+        <circle cx="80" cy="109" r="4.5" fill="#4a3540"/>
+        <circle cx="120" cy="109" r="4.5" fill="#4a3540"/>
+      </g>
+      <g class="eye-set eyes-pleading">
+        <ellipse cx="79" cy="109" rx="11" ry="13" fill="#fff" stroke="#f2a8bf" stroke-width="1"/>
+        <ellipse cx="121" cy="109" rx="11" ry="13" fill="#fff" stroke="#f2a8bf" stroke-width="1"/>
+        <circle cx="80" cy="112" r="8" fill="#5b4148"/>
+        <circle cx="122" cy="112" r="8" fill="#5b4148"/>
+        <circle cx="80" cy="112" r="4" fill="#2c1f24"/>
+        <circle cx="122" cy="112" r="4" fill="#2c1f24"/>
+        <circle cx="83.5" cy="107.5" r="2.6" fill="#fff"/>
+        <circle cx="125.5" cy="107.5" r="2.6" fill="#fff"/>
+        <circle cx="77" cy="115" r="1.3" fill="#fff" opacity="0.8"/>
+        <circle cx="119" cy="115" r="1.3" fill="#fff" opacity="0.8"/>
+      </g>
+      <g class="eye-set eyes-squeezed">
+        <path d="M74 99 L89 109 L74 119" stroke="#4a3540" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M126 99 L111 109 L126 119" stroke="#4a3540" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+      <g class="eye-set eyes-shut">
+        <path d="M72 110q8-11 16 0" stroke="#4a3540" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M112 110q8-11 16 0" stroke="#4a3540" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </g>
+
+      <ellipse cx="68" cy="122" rx="9" ry="5" fill="#ffc3d6" opacity="0.7"/>
+      <ellipse cx="132" cy="122" rx="9" ry="5" fill="#ffc3d6" opacity="0.7"/>
+      <path d="M96 118 L104 118 L100 123 Z" fill="#ff9db8"/>
+
+      <path class="mouth mouth-0" d="M100 123q-6 8-14 3M100 123q6 8 14 3" stroke="#4a3540" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <path class="mouth mouth-1" d="M86 127q14 9 28 0" stroke="#4a3540" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <ellipse class="mouth mouth-2" cx="100" cy="129" rx="6" ry="4" fill="#4a3540"/>
+      <path class="mouth mouth-3" d="M85 130q4-9 7 0q4-9 7 0q4-9 7 0q4-9 7 0" stroke="#4a3540" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <ellipse class="mouth mouth-4" cx="100" cy="131" rx="7" ry="9" fill="#4a3540"/>
+
+      <path class="tear-single" d="M64 118q-6 9 0 15q6-6 0-15z" fill="#5bc4e8"/>
+
+      <g class="tears">
+        <path class="drop" d="M72 116q-6 9 0 15q6-6 0-15z" fill="#8fd3ec"/>
+        <path class="drop drop2" d="M128 116q-6 9 0 15q6-6 0-15z" fill="#8fd3ec"/>
+      </g>
+
+      <path d="M35 112 L65 110M35 122 L65 120" stroke="#f2a8bf" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M165 112 L135 110M165 122 L135 120" stroke="#f2a8bf" stroke-width="1.5" stroke-linecap="round"/>
+      <g transform="translate(96,144) scale(0.34,0.42)">
+        <path d="M50,88 C10,60 -10,20 25,10 C45,4 50,25 50,25 C50,25 55,4 75,10 C110,20 90,60 50,88 Z" fill="#ff6f9c" class="heart-pulse"/>
+      </g>
+    </svg>
+    </div>
+    <h1>Не хочешь сходить со мной кое-куда?&nbsp;💌</h1>
+    <p class="sub">Открывай, не пожалеешь</p>
+    <div class="btn-row">
+      <button class="btn-yes" onclick="goTo(2)">Да</button>
+      <button class="btn-no" id="noBtn">Нет</button>
+    </div>
+  </div>
+
+  <!-- STAGE 2: confirm -->
+  <div class="screen" id="stage2">
+    <svg class="art" viewBox="0 0 200 200" fill="none">
+      <ellipse cx="100" cy="175" rx="55" ry="10" fill="#ffd7e4"/>
+      <path d="M55 70 L35 15 L92 55 Z" fill="#fff3f6" stroke="#f2a8bf" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M145 70 L165 15 L108 55 Z" fill="#fff3f6" stroke="#f2a8bf" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M58 60 L46 28 L80 53 Z" fill="#ffc3d6"/>
+      <path d="M142 60 L154 28 L120 53 Z" fill="#ffc3d6"/>
+      <circle cx="100" cy="120" r="52" fill="#fff3f6" stroke="#f2a8bf" stroke-width="2"/>
+      <circle cx="78" cy="112" r="6" fill="#4a3540" class="blink"/>
+      <circle cx="122" cy="112" r="6" fill="#4a3540" class="blink"/>
+      <ellipse cx="66" cy="130" rx="9" ry="5" fill="#ffc3d6" opacity="0.8"/>
+      <ellipse cx="134" cy="130" rx="9" ry="5" fill="#ffc3d6" opacity="0.8"/>
+      <path d="M96 122 L104 122 L100 127 Z" fill="#ff9db8"/>
+      <ellipse cx="100" cy="140" rx="6" ry="8" fill="#4a3540"/>
+      <path d="M33 108 L64 106M33 118 L64 116" stroke="#f2a8bf" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M167 108 L136 106M167 118 L136 116" stroke="#f2a8bf" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    <h1>Подожди, ты правда сказала да? 😳</h1>
+    <p class="sub">Я почти был готов услышать "нет"…</p>
+    <button class="btn-wide" onclick="goTo(3)">Да, да, ДА</button>
+  </div>
+
+  <!-- STAGE 3: date/time -->
+  <div class="screen" id="stage3">
+    <svg class="art" viewBox="0 0 200 200" fill="none">
+      <ellipse cx="100" cy="180" rx="60" ry="8" fill="#ffd7e4"/>
+      <g transform="translate(20,75)">
+        <path d="M12 45 L2 15 L35 33 Z" fill="#fff3f6" stroke="#f2a8bf" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M58 45 L68 15 L35 33 Z" fill="#fff3f6" stroke="#f2a8bf" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M14 40 L8 22 L28 33 Z" fill="#ffc3d6"/>
+        <path d="M56 40 L62 22 L42 33 Z" fill="#ffc3d6"/>
+        <circle cx="35" cy="60" r="28" fill="#fff3f6" stroke="#f2a8bf" stroke-width="2"/>
+        <circle cx="27" cy="57" r="3" fill="#4a3540" class="blink"/>
+        <circle cx="43" cy="57" r="3" fill="#4a3540" class="blink"/>
+        <path d="M31 68q4 4 8 0" stroke="#4a3540" stroke-width="2" fill="none" stroke-linecap="round"/>
+      </g>
+      <g transform="translate(97,75)">
+        <path d="M12 45 L2 15 L35 33 Z" fill="#fff3f6" stroke="#f2a8bf" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M58 45 L68 15 L35 33 Z" fill="#fff3f6" stroke="#f2a8bf" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M14 40 L8 22 L28 33 Z" fill="#ffc3d6"/>
+        <path d="M56 40 L62 22 L42 33 Z" fill="#ffc3d6"/>
+        <circle cx="35" cy="60" r="28" fill="#fff3f6" stroke="#f2a8bf" stroke-width="2"/>
+        <circle cx="27" cy="57" r="3" fill="#4a3540" class="blink"/>
+        <circle cx="43" cy="57" r="3" fill="#4a3540" class="blink"/>
+        <path d="M31 68q4 4 8 0" stroke="#4a3540" stroke-width="2" fill="none" stroke-linecap="round"/>
+      </g>
+      <g transform="translate(88,58) scale(0.22,0.24)">
+        <path d="M50,88 C10,60 -10,20 25,10 C45,4 50,25 50,25 C50,25 55,4 75,10 C110,20 90,60 50,88 Z" fill="#ff6f9c" class="heart-pulse"/>
+      </g>
+    </svg>
+    <h1>Итак… когда ты свободна?</h1>
+    <div class="field">
+      <label>Дата</label>
+      <input type="date" id="dateInput">
+    </div>
+    <div class="field">
+      <label>Время</label>
+      <input type="time" id="timeInput">
+    </div>
+    <button class="btn-wide" id="dateNextBtn" onclick="confirmDate()" disabled>Продолжить</button>
+  </div>
+
+  <!-- STAGE 4: place -->
+  <div class="screen" id="stage4">
+    <h1 style="margin-top:6px;">Куда бы ты хотела сходить?</h1>
+    <p class="sub">Можно выбрать несколько</p>
+    <div class="food-grid" id="placeGrid">
+      <div class="food-item" data-place="Кино"><span class="emoji">🎬</span><span class="label">Кино</span></div>
+      <div class="food-item" data-place="Кафе"><span class="emoji">☕</span><span class="label">Кафе</span></div>
+      <div class="food-item" data-place="Парк"><span class="emoji">🌳</span><span class="label">Парк</span></div>
+      <div class="food-item" data-place="Боулинг"><span class="emoji">🎳</span><span class="label">Боулинг</span></div>
+      <div class="food-item" data-place="Конная прогулка"><span class="emoji">🐴</span><span class="label">Конная прогулка</span></div>
+      <div class="food-item place-custom">
+        <span class="emoji">📝</span>
+        <input type="text" id="placeCustom" placeholder="свой вариант">
+      </div>
+    </div>
+    <button class="btn-wide" onclick="goTo(5)">Продолжить →</button>
+  </div>
+
+  <!-- STAGE 5: food -->
+  <div class="screen" id="stage5">
+    <h1 style="margin-top:6px;">Что бы ты хотела покушать?</h1>
+    <p class="sub">Можно выбрать несколько</p>
+    <div class="food-grid" id="foodGrid">
+      <div class="food-item" data-food="Пицца"><span class="emoji">🍕</span><span class="label">Пицца</span></div>
+      <div class="food-item" data-food="Суши"><span class="emoji">🍣</span><span class="label">Суши</span></div>
+      <div class="food-item" data-food="Бургер"><span class="emoji">🍔</span><span class="label">Бургер</span></div>
+      <div class="food-item" data-food="Шашлык"><span class="emoji">🍢</span><span class="label">Шашлык</span></div>
+      <div class="food-item" data-food="Торт"><span class="emoji">🍰</span><span class="label">Торт</span></div>
+      <div class="food-item" data-food="Винишко"><span class="emoji">🍷</span><span class="label">Винишко</span></div>
+    </div>
+    <button class="btn-wide" onclick="goTo(6)">Продолжить →</button>
+  </div>
+
+  <!-- STAGE 6: thank you -->
+  <div class="screen" id="stage6">
+    <svg class="art" viewBox="0 0 200 200" fill="none">
+      <ellipse cx="100" cy="175" rx="55" ry="10" fill="#ffd7e4"/>
+      <path d="M58 65 L38 12 L93 50 Z" fill="#fff3f6" stroke="#f2a8bf" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M142 65 L162 12 L107 50 Z" fill="#fff3f6" stroke="#f2a8bf" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M61 56 L48 24 L80 48 Z" fill="#ffc3d6"/>
+      <path d="M139 56 L152 24 L120 48 Z" fill="#ffc3d6"/>
+      <circle cx="100" cy="115" r="50" fill="#fff3f6" stroke="#f2a8bf" stroke-width="2"/>
+      <path d="M76 107q4-6 8 0" stroke="#4a3540" stroke-width="2.5" fill="none" stroke-linecap="round" class="blink"/>
+      <path d="M116 107q4-6 8 0" stroke="#4a3540" stroke-width="2.5" fill="none" stroke-linecap="round" class="blink"/>
+      <ellipse cx="68" cy="124" rx="9" ry="5" fill="#ffc3d6" opacity="0.8"/>
+      <ellipse cx="132" cy="124" rx="9" ry="5" fill="#ffc3d6" opacity="0.8"/>
+      <path d="M96 120 L104 120 L100 125 Z" fill="#ff9db8"/>
+      <path d="M100 125q-8 10-18 4M100 125q8 10 18 4" stroke="#4a3540" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <path d="M35 114 L65 112M35 124 L65 122" stroke="#f2a8bf" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M165 114 L135 112M165 124 L135 122" stroke="#f2a8bf" stroke-width="1.5" stroke-linecap="round"/>
+      <g transform="translate(96,142) scale(0.3,0.38)">
+        <path d="M50,88 C10,60 -10,20 25,10 C45,4 50,25 50,25 C50,25 55,4 75,10 C110,20 90,60 50,88 Z" fill="#ff6f9c" class="heart-pulse"/>
+      </g>
+    </svg>
+    <h1>Рад, что не отказалась 💕</h1>
+    <div class="summary-card">
+      <div class="summary-row"><span class="k">Дата</span><span class="v" id="sumDate">—</span></div>
+      <div class="summary-row"><span class="k">Время</span><span class="v" id="sumTime">—</span></div>
+      <div class="summary-row"><span class="k">Куда</span><span class="v" id="sumPlace">—</span></div>
+      <div class="summary-row"><span class="k">Меню</span><span class="v" id="sumFood">—</span></div>
+    </div>
+    <p class="sub" style="margin-bottom:0;">Я приеду за тобой, никуда не пропадай 😉</p>
+  </div>
+
+</div>
+
+<script>
+  const total = 6;
+  const progressEl = document.getElementById('progress');
+
+  function updateProgress(stage){
+    const bars = progressEl.children;
+    for(let i=0;i<bars.length;i++){
+      bars[i].classList.toggle('done', i < stage);
+    }
+  }
+
+  function goTo(n){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('stage'+n).classList.add('active');
+    updateProgress(n);
+    if(n === 6){ renderSummary(); burstHearts(); }
+  }
+  updateProgress(1);
+
+  // ---- Runaway "No" button ----
+  const noBtn = document.getElementById('noBtn');
+  const stage1 = document.getElementById('stage1');
+  const kittenFace = document.getElementById('kittenFace');
+  const kittenWrap = document.getElementById('kittenWrap');
+  let noClicks = 0;
+
+  function updateExpression(){
+    noClicks++;
+    const stage = Math.min(noClicks, 4);
+    if(kittenFace) kittenFace.setAttribute('data-stage', stage);
+    if(kittenWrap) kittenWrap.setAttribute('data-stage', stage);
+  }
+
+  function dodge(){
+    const now = Date.now();
+    if (dodge._last && now - dodge._last < 200) return;
+    dodge._last = now;
+    const cardRect = stage1.getBoundingClientRect();
+    const btnW = noBtn.offsetWidth || 90;
+    const btnH = noBtn.offsetHeight || 50;
+    const margin = 10;
+    const maxX = Math.max(margin, cardRect.width - btnW - margin);
+    const maxY = Math.max(margin, cardRect.height - btnH - margin);
+    let x, y, tries = 0;
+    do {
+      x = margin + Math.random() * (maxX - margin);
+      y = margin + Math.random() * (maxY - margin);
+      tries++;
+    } while (
+      tries < 10 &&
+      noBtn.style.position === 'absolute' &&
+      Math.abs(x - parseFloat(noBtn.style.left || 0)) < btnW &&
+      Math.abs(y - parseFloat(noBtn.style.top || 0)) < btnH
+    );
+    noBtn.style.position = 'absolute';
+    noBtn.style.left = x + 'px';
+    noBtn.style.top = y + 'px';
+    noBtn.style.margin = '0';
+    updateExpression();
+  }
+  noBtn.addEventListener('mouseenter', dodge);
+  noBtn.addEventListener('touchstart', function(e){ e.preventDefault(); dodge(); }, {passive:false});
+  noBtn.addEventListener('click', function(e){ e.preventDefault(); dodge(); });
+  noBtn.addEventListener('pointerdown', function(e){ e.preventDefault(); dodge(); });
+
+  // ---- Date/time ----
+  const dateInput = document.getElementById('dateInput');
+  const timeInput = document.getElementById('timeInput');
+  const dateNextBtn = document.getElementById('dateNextBtn');
+
+  const today = new Date();
+  dateInput.min = today.toISOString().split('T')[0];
+
+  function checkDateFields(){
+    dateNextBtn.disabled = !(dateInput.value && timeInput.value);
+  }
+  dateInput.addEventListener('change', checkDateFields);
+  timeInput.addEventListener('change', checkDateFields);
+
+  function confirmDate(){ goTo(4); }
+
+  // ---- Food/place selection ----
+  document.querySelectorAll('.food-item:not(.place-custom)').forEach(item => {
+    item.addEventListener('click', () => item.classList.toggle('selected'));
+  });
+
+  // ---- Summary ----
+  function formatDate(str){
+    if(!str) return '—';
+    const [y,m,d] = str.split('-');
+    const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+    return `${parseInt(d)} ${months[parseInt(m)-1]} ${y}`;
+  }
+
+  const TELEGRAM_BOT_TOKEN = '8606995421:AAG1S9JcgCWP1bsvhwOorxJnHAtw9AnfPfY';
+  const TELEGRAM_CHAT_ID = '1480709493';
+  let alreadySent = false;
+
+  function sendToTelegram(dateText, timeText, placeText, foodText){
+    if(alreadySent) return;
+    alreadySent = true;
+    const text = `💌 Она ответила на приглашение!\n\nДата: ${dateText}\nВремя: ${timeText}\nКуда: ${placeText}\nЕда: ${foodText}`;
+    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+    fetch(url, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: text })
+    }).catch(() => { alreadySent = false; });
+  }
+
+  function renderSummary(){
+    const dateText = formatDate(dateInput.value);
+    const timeText = timeInput.value || '—';
+    const places = Array.from(document.querySelectorAll('#placeGrid .food-item.selected')).map(f => f.dataset.place);
+    const customPlace = document.getElementById('placeCustom').value.trim();
+    if(customPlace) places.push(customPlace);
+    const placeText = places.length ? places.join(', ') : 'решим на месте';
+    const foods = Array.from(document.querySelectorAll('#foodGrid .food-item.selected')).map(f => f.dataset.food);
+    const foodText = foods.length ? foods.join(', ') : 'на твой вкус';
+
+    document.getElementById('sumDate').textContent = dateText;
+    document.getElementById('sumTime').textContent = timeText;
+    document.getElementById('sumPlace').textContent = placeText;
+    document.getElementById('sumFood').textContent = foodText;
+
+    sendToTelegram(dateText, timeText, placeText, foodText);
+  }
+
+  // ---- Falling hearts on final screen ----
+  function burstHearts(){
+    const app = document.getElementById('app');
+    const layer = document.createElement('div');
+    layer.className = 'heart-fall';
+    app.appendChild(layer);
+    const symbols = ['💕','💖','💗','✨'];
+    for(let i=0;i<18;i++){
+      const s = document.createElement('span');
+      s.textContent = symbols[Math.floor(Math.random()*symbols.length)];
+      s.style.left = Math.random()*100 + '%';
+      s.style.animationDuration = (2.5 + Math.random()*2) + 's';
+      s.style.animationDelay = (Math.random()*1.5) + 's';
+      layer.appendChild(s);
+    }
+    setTimeout(() => layer.remove(), 5000);
+  }
+</script>
+
+</body>
+</html>
